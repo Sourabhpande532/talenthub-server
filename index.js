@@ -7,7 +7,6 @@ const jwt = require("jsonwebtoken");
 const { databaseInitialization } = require("./db/db.connect");
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
-databaseInitialization();
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
@@ -23,7 +22,7 @@ const corsOption = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true,
+  credential: true,
   optionSuccessStatus: 200,
 };
 
@@ -33,6 +32,21 @@ app.use(cors(corsOption));
 app.use(morgan("dev"));
 app.use(express.json());
 
+// Ensure database is connected before handling any routes
+app.use(async (req, res, next) => {
+  try {
+    await databaseInitialization();
+    next();
+  } catch (error) {
+    console.error("Database connection error in middleware:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: "Database connection failed",
+    });
+  }
+});
+
 app.use("/auth", require("./routes/auth.routes"));
 
 app.get("/", (req, res) => {
@@ -40,6 +54,12 @@ app.get("/", (req, res) => {
 });
 
 const port = process.env.PORT || 5001;
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+
+// Only start the server if this file is run directly (not imported as a module by Vercel)
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
+}
+
+module.exports = app;
