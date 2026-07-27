@@ -23,6 +23,10 @@ app.use(express.json());
 
 app.use("/auth", require("./routes/auth.routes"));
 
+app.get("/",(req,res)=>{
+  res.send('Welcome to TalentHub express server')
+})
+
 const port = process.env.PORT || 5001;
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
