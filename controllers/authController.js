@@ -18,7 +18,7 @@ exports.registerUser = async (req, res) => {
       });
     }
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hash });
+    const user = await User.create({ name, email, password: hash, role: role || "Applicant" });
     res
       .status(201)
       .json({ success: true, message: "User register successful" });
@@ -55,7 +55,7 @@ exports.loginUser = async (req, res) => {
       });
     }
     const token = await jwt.sign(
-      { userId: user._id, role: "admin", name: user.name, email },
+      { userId: user._id, role: user.role, name: user.name, email },
       process.env.JWT_SECRET,
       { expiresIn: "1d" },
     );
