@@ -107,3 +107,41 @@ exports.createJob = async (req, res) => {
     });
   }
 };
+
+const getJobByIdFromDB = async (jobId) => {
+  try {
+    return await Job.findById(jobId).populate(
+      "recruiter",
+      "name email companyName companyLogo website aboutCompany",
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+exports.getJobById = async (req, res) => {
+  try {
+    const job = await getJobByIdFromDB(req.params.id);
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found" });
+    }
+
+    /*  Fetch similar jobs based on title or skills */
+    const similarJobs = await Job.find({
+      _id: { $ne: job._id },
+      status: "Active",
+      $or: [
+        { title: { $regex: job.title.split(" ")[0], $options: "i" } },
+        { skills: { $in: job.skills } },
+      ],
+    }).limit(3);
+
+    res.status(200).json({ success: true, data: { job, similarJobs } });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};

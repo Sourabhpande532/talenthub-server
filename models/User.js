@@ -9,14 +9,14 @@ const userSchema = new mongoose.Schema(
       enum: ["Applicant", "Recruiter"],
       default: "Applicant",
     },
-    // Applicant
+    /* Applicant */
     photo: { type: String, default: "" },
     bio: { type: String, default: "" },
     experience: { type: String, default: "" },
     education: { type: String, default: "" },
     skills: { type: [String], default: [] },
     bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
-    // Recruiter
+    /*  Recruiter */
     companyName: { type: String, default: "" },
     companyLogo: { type: String, default: "" },
     website: { type: String, default: "" },
