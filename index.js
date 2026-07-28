@@ -7,6 +7,9 @@ const jwt = require("jsonwebtoken");
 const { databaseInitialization } = require("./db/db.connect");
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
+const cloudinary = require("cloudinary");
+const multer = require("multer");
+const bodyParder = require("body-parser");
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
@@ -22,7 +25,7 @@ const corsOption = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credential: true,
+  credentials: true,
   optionSuccessStatus: 200,
 };
 
@@ -31,8 +34,20 @@ const app = express();
 app.use(cors(corsOption));
 app.use(morgan("dev"));
 app.use(express.json());
+app.use(bodyParder.json());
 
-// Ensure database is connected before handling any routes
+
+// CLOUDINARY SET_UP
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// MULTER SET_UP
+const storage = multer.diskStorage({});
+const upload = multer({ storage });
+
 app.use(async (req, res, next) => {
   try {
     await databaseInitialization();
@@ -46,7 +61,6 @@ app.use(async (req, res, next) => {
     });
   }
 });
-
 app.use("/auth", require("./routes/auth.routes"));
 
 app.get("/", (req, res) => {
@@ -55,7 +69,6 @@ app.get("/", (req, res) => {
 
 const port = process.env.PORT || 5001;
 
-// Only start the server if this file is run directly (not imported as a module by Vercel)
 if (require.main === module) {
   app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

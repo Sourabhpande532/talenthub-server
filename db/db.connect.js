@@ -19,7 +19,7 @@ const databaseInitialization = async () => {
     
     const opts = {
       dbName: "mcr_fsp_main",
-      bufferCommands: false, // Disable Mongoose buffering for Serverless
+      bufferCommands: false,
       serverSelectionTimeoutMS: 5000,
     };
     
