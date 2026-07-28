@@ -19,3 +19,52 @@ exports.getProfile = async (req, res) => {
   }
 };
 
+exports.updateProfile = async (req, res) => {
+  try {
+    const {
+      name,
+      photo,
+      bio,
+      experience,
+      education,
+      skills,
+      companyName,
+      companyLogo,
+      website,
+      aboutCompany,
+    } = req.body;
+
+    const updateData = {};
+    if (name) updateData.name = name;
+
+    if (req.user.role === "Applicant") {
+      if (photo !== undefined) updateData.photo = photo;
+      if (bio !== undefined) updateData.bio = bio;
+      if (experience !== undefined) updateData.experience = experience;
+      if (education !== undefined) updateData.education = education;
+      if (skills !== undefined) updateData.skills = skills;
+    } else if (req.user.role === "Recruiter") {
+      if (companyName !== undefined) updateData.companyName = companyName;
+      if (companyLogo !== undefined) updateData.companyLogo = companyLogo;
+      if (website !== undefined) updateData.website = website;
+      if (aboutCompany !== undefined) updateData.aboutCompany = aboutCompany;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId,
+      updateData,
+      { new: true },
+    ).select("-password");
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Profile updated successfully",
+        data: updatedUser,
+      });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
