@@ -1,6 +1,46 @@
 const Application = require("../models/Application");
 const Job = require("../models/Job");
 
+const getApplicationsByJobId = async (jobId, recruiterId) => {
+  try {
+    // First, verify the job belongs to the recruiter
+    const job = await Job.findOne({ _id: jobId, recruiter: recruiterId });
+    if (!job) {
+      return null;
+    }
+    return await Application.find({ job: jobId }).populate(
+      "applicant",
+      "name email photo experience skills education resume",
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+
+exports.getJobApplicants = async (req, res) => {
+  try {
+    const applications = await getApplicationsByJobId(
+      req.params.jobId,
+      req.user.userId,
+    );
+    if (!applications) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized or job not found" });
+    }
+    res
+      .status(200)
+      .json({ success: true, count: applications.length, data: applications });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 const createApplicationInDB = async (applicationData) => {
   try {
     return await Application.create(applicationData);
