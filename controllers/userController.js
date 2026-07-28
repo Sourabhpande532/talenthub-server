@@ -114,3 +114,53 @@ exports.removeBookmark = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+exports.getRecruiterDashboard = async (req, res) => {
+  try {
+    const recruiterId = req.user.userId;
+
+    // Get jobs created by this recruiter
+    const jobs = await Job.find({ recruiter: recruiterId });
+    const jobIds = jobs.map((job) => job._id);
+
+    const activeJobsCount = jobs.filter(
+      (job) => job.status === "Active",
+    ).length;
+    const archivedJobsCount = jobs.filter(
+      (job) => job.status === "Archived",
+    ).length;
+
+    // Get applications for these jobs
+    const applications = await Application.find({ job: { $in: jobIds } })
+      .populate("job", "title")
+      .populate("applicant", "name email");
+
+    const totalApplications = applications.length;
+    const totalShortlisted = applications.filter(
+      (app) => app.status === "Shortlisted",
+    ).length;
+
+    // Get recent applications (last 5)
+    const recentApplications = await Application.find({ job: { $in: jobIds } })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("job", "title")
+      .populate("applicant", "name email experience");
+
+    res.status(200).json({
+      success: true,
+      data: {
+        stats: {
+          activeJobs: activeJobsCount,
+          archivedJobs: archivedJobsCount,
+          totalApplications,
+          totalShortlisted,
+        },
+        recentApplications,
+      },
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
