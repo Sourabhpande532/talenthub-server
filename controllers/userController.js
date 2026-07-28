@@ -56,13 +56,38 @@ exports.updateProfile = async (req, res) => {
       { new: true },
     ).select("-password");
 
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.addBookmark = async (req, res) => {
+  try {
+    const { jobId } = req.body;
+
+    // Check if job exists
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ success: false, message: "Job not found" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      { $addToSet: { bookmarks: jobId } }, // Prevent duplicates
+      { new: true },
+    )
+      .select("-password")
+      .populate("bookmarks");
+
     res
       .status(200)
-      .json({
-        success: true,
-        message: "Profile updated successfully",
-        data: updatedUser,
-      });
+      .json({ success: true, message: "Job bookmarked", data: user });
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ success: false, message: "Internal server error" });
