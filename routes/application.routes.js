@@ -7,11 +7,13 @@ const {
   getJobApplicants,
   withdrawApplication,
   updateApplicationStatus,
+  getAppliedJobs,
 } = require("../controllers/applicationController");
 
 /* Applicant Routes */
 app.post("/apply", auth, isApplicant, applyJob);
 app.delete("/:id/withdraw", auth, isApplicant, withdrawApplication);
+app.get("/me", auth, isApplicant, getAppliedJobs)
 
 /* Recruiter Routes */
 app.get("/job/:jobId", auth, isRecruiter, getJobApplicants);

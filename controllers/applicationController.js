@@ -181,3 +181,28 @@ exports.updateApplicationStatus = async (req, res) => {
     });
   }
 };
+
+
+exports.getAppliedJobs = async (req, res) => {
+  try {
+    const applications = await Application.find({ applicant: req.user.userId })
+      .populate({
+        path: "job",
+        populate: { path: "recruiter", select: "companyName companyLogo" },
+      })
+      .sort({ createdAt: -1 });
+
+    res
+      .status(200)
+      .json({ success: true, count: applications.length, data: applications });
+  } catch (error) {
+    console.error(error.message);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal server error",
+        error: error.message,
+      });
+  }
+};
