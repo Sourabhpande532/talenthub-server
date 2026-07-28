@@ -36,7 +36,6 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(bodyParder.json());
 
-
 // CLOUDINARY SET_UP
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -64,7 +63,8 @@ app.use(async (req, res, next) => {
 
 // ROUTES
 app.use("/auth", require("./routes/auth.routes"));
-app.use("/api/jobs",require("./routes/job.routes"))
+app.use("/api/jobs", require("./routes/job.routes"));
+app.use("/api/applications", require("./routes/application.routes"));
 
 app.get("/", (req, res) => {
   res.send("Welcome to TalentHub express server");
