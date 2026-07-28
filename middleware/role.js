@@ -5,3 +5,4 @@ const isRecruiter = (req, res, next) => {
     res.status(403).json({ success: false, message: "Access denied. Recruiters only." });
   }
 };
+module.exports = {isRecruiter}

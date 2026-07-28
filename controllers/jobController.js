@@ -1,1 +1,109 @@
 const Job = require("../models/Job");
+
+const getJobsFromDB = async (filters, sortOption) => {
+  try {
+    return await Job.find(filters)
+      .sort(sortOption)
+      .populate("recruiter", "companyName companyLogo");
+  } catch (error) {
+    throw error;
+  }
+};
+
+exports.getAllJobs = async (req, res) => {
+  try {
+    const {
+      search,
+      location,
+      salary,
+      experience,
+      employmentType,
+      remote,
+      sort,
+    } = req.query;
+
+    // Build filters
+    const filters = { status: "Active" };
+    if (search) {
+      filters.title = { $regex: search, $options: "i" };
+    }
+    if (location) {
+      filters.location = { $regex: location, $options: "i" };
+    }
+    if (salary) {
+      filters.salary = { $gte: Number(salary) };
+    }
+    if (experience) {
+      filters.experience = experience;
+    }
+    if (employmentType) {
+      filters.employmentType = employmentType;
+    }
+    if (remote) {
+      filters.remote = remote === "true";
+    }
+
+    // Build sort option
+    let sortOption = { createdAt: -1 };
+    if (sort === "salary-desc") {
+      sortOption = { salary: -1 };
+    } else if (sort === "salary-asc") {
+      sortOption = { salary: 1 };
+    }
+
+    const jobs = await getJobsFromDB(filters, sortOption);
+    res.status(200).json({ success: true, count: jobs.length, data: jobs });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+const createJobInDB = async (jobData) => {
+  try {
+    return await Job.create(jobData);
+  } catch (error) {
+    throw error;
+  }
+};
+exports.createJob = async (req, res) => {
+  try {
+    const jobData = { ...req.body, recruiter: req.user.userId };
+    if (
+      !jobData.title ||
+      !jobData.company ||
+      !jobData.salary ||
+      !jobData.deadline
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
+    }
+    if (jobData.salary <= 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Salary must be greater than 0" });
+    }
+    if (new Date(jobData.deadline) < new Date()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Deadline cannot be in the past" });
+    }
+
+    const job = await createJobInDB(jobData);
+    res
+      .status(201)
+      .json({ success: true, message: "Job created successfully", data: job });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};

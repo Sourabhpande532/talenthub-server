@@ -61,7 +61,10 @@ app.use(async (req, res, next) => {
     });
   }
 });
+
+// ROUTES
 app.use("/auth", require("./routes/auth.routes"));
+app.use("/api/jobs",require("./routes/job.routes"))
 
 app.get("/", (req, res) => {
   res.send("Welcome to TalentHub express server");
