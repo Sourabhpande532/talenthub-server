@@ -79,7 +79,7 @@ exports.addBookmark = async (req, res) => {
 
     const user = await User.findByIdAndUpdate(
       req.user.userId,
-      { $addToSet: { bookmarks: jobId } }, // Prevent duplicates
+      { $addToSet: { bookmarks: jobId } },
       { new: true },
     )
       .select("-password")
@@ -88,6 +88,27 @@ exports.addBookmark = async (req, res) => {
     res
       .status(200)
       .json({ success: true, message: "Job bookmarked", data: user });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.removeBookmark = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      { $pull: { bookmarks: jobId } },
+      { new: true },
+    )
+      .select("-password")
+      .populate("bookmarks");
+
+    res
+      .status(200)
+      .json({ success: true, message: "Bookmark removed", data: user });
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ success: false, message: "Internal server error" });

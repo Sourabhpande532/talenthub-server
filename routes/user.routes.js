@@ -5,6 +5,7 @@ const {
   getProfile,
   updateProfile,
   addBookmark,
+  removeBookmark,
 } = require("../controllers/userController");
 const { isApplicant } = require("../middleware/role");
 
@@ -14,5 +15,8 @@ app.put("/profile", auth, updateProfile);
 
 /* Applicant Bookmark routes */
 app.post("/bookmarks", auth, isApplicant, addBookmark);
+app.delete("/bookmarks/:jobId", auth, isApplicant, removeBookmark)
+
+/* Recruiter Dashboard route */
 
 module.exports = app;
