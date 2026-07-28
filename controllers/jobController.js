@@ -145,3 +145,69 @@ exports.getJobById = async (req, res) => {
     });
   }
 };
+
+const updateJobInDB = async (jobId, recruiterId, updateData) => {
+  try {
+    return await Job.findOneAndUpdate(
+      { _id: jobId, recruiter: recruiterId },
+      updateData,
+      { new: true },
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+
+exports.updateJob = async (req, res) => {
+  try {
+    const job = await updateJobInDB(req.params.id, req.user.userId, req.body);
+    if (!job) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Job not found or unauthorized" });
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "Job updated successfully", data: job });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+const archiveJobInDB = async (jobId, recruiterId) => {
+  try {
+    return await Job.findOneAndUpdate(
+      { _id: jobId, recruiter: recruiterId },
+      { status: "Archived" },
+      { new: true },
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+
+exports.archiveJob = async (req, res) => {
+  try {
+    const job = await archiveJobInDB(req.params.id, req.user.userId);
+    if (!job) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Job not found or unauthorized" });
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "Job archived successfully", data: job });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
