@@ -3,7 +3,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const morgan = require("morgan");
-const jwt = require("jsonwebtoken");
 const { databaseInitialization } = require("./db/db.connect");
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);

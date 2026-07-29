@@ -187,4 +187,4 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 ## Contact
 
-For bugs or feature requests, please reach out to [sourabhpande43@gmail.com](mailto:sourabhpande43@gmail.com)
+For bugs or feature requests, please reach out to [sourabhpande43@gmail.com](https://mail.google.com/mail/u/0/?tf=cm&to=sourabhpande43@gmail.com&fs=1)
