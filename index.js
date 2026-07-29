@@ -7,8 +7,6 @@ const jwt = require("jsonwebtoken");
 const { databaseInitialization } = require("./db/db.connect");
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
-const cloudinary = require("cloudinary");
-const multer = require("multer");
 const bodyParder = require("body-parser");
 
 const allowedOrigins = [
@@ -36,16 +34,6 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(bodyParder.json());
 
-// CLOUDINARY SET_UP
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-// MULTER SET_UP
-const storage = multer.diskStorage({});
-const upload = multer({ storage });
 
 app.use(async (req, res, next) => {
   try {
@@ -67,6 +55,7 @@ app.use("/api/jobs", require("./routes/job.routes"));
 app.use("/api/applications", require("./routes/application.routes"));
 app.use("/api/users", require("./routes/user.routes"));
 app.use("/api/ai", require("./routes/ai.routes"));
+app.use("/", require("./routes/upload.routes"))
 
 app.get("/", (req, res) => {
   res.send("Welcome to TalentHub express server");
