@@ -66,6 +66,7 @@ app.use("/auth", require("./routes/auth.routes"));
 app.use("/api/jobs", require("./routes/job.routes"));
 app.use("/api/applications", require("./routes/application.routes"));
 app.use("/api/users", require("./routes/user.routes"));
+app.use("/api/ai", require("./routes/ai.routes"));
 
 app.get("/", (req, res) => {
   res.send("Welcome to TalentHub express server");
