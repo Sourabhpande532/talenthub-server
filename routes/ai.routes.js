@@ -1,10 +1,16 @@
 const express = require("express");
 const app = express();
 const auth = require("../middleware/auth");
-const { isApplicant } = require( "../middleware/role" );
-const { generateInterviewPrep } = require( "../controllers/aiController" );
+const { isApplicant, isRecruiter } = require("../middleware/role");
+const {
+  generateInterviewPrep,
+  askHiringAssistant,
+} = require("../controllers/aiController");
 
-app.post("/interview-prep", auth, isApplicant, generateInterviewPrep)
+/* Applicant: AI Interview Prep */
+app.post("/interview-prep", auth, isApplicant, generateInterviewPrep);
 
+/* Recruiter: AI Hiring Assistant */
+app.post("/hiring-assistant", auth, isRecruiter, askHiringAssistant);
 
 module.exports = app;

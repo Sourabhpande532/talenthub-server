@@ -77,3 +77,60 @@ Preparation Tips
     });
   }
 };
+
+exports.askHiringAssistant = async (req, res) => {
+  try {
+    const { jobId, question } = req.body;
+
+    // RAG: Retrieve applications for this job
+    const job = await Job.findOne({ _id: jobId, recruiter: req.user.userId });
+    if (!job) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized or job not found" });
+    }
+
+    const applications = await Application.find({ job: jobId }).populate(
+      "applicant",
+      "name email experience skills education",
+    );
+
+    // Map data to a concise JSON format for context
+    const applicantsContext = applications.map((app) => ({
+      name: app.applicant.name,
+      experience: app.applicant.experience,
+      skills: app.applicant.skills,
+      education: app.applicant.education,
+      status: app.status,
+    }));
+
+    const systemPrompt = `You are an expert AI Hiring Assistant helping a recruiter make decisions.
+Answer the recruiter's question based strictly on the provided applicant data in JSON format.
+Do not invent or assume information. If the answer cannot be determined from the data, say so.
+
+Applicant Data:
+${JSON.stringify(applicantsContext, null, 2)}
+`;
+
+    const response = await openai.chat.completions.create({
+      model: modelName,
+      temperature: temperature, // Lower (0.2) because we want deterministic, factual answers based on JSON context
+      max_tokens: max_tokens_mid,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: question },
+      ],
+    });
+
+    res
+      .status(200)
+      .json({ success: true, data: response.choices[0].message.content });
+  } catch (error) {
+    console.error("AI Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "AI service is currently unavailable. Please try again later.",
+    });
+  }
+};
+
