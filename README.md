@@ -3,7 +3,7 @@
 ---
 
 A MERN Stack AI-powered hiring platform connecting recruiters and applicants. Recruiters can post jobs, manage applications, and use an AI Hiring Assistant. Applicants can browse jobs, bookmark them, apply, and generate AI-driven interview preparation materials. <br>
-Built with a React frontend, Express/Node backend, MongoDB database, and OpenRouter AI integration.
+Built with a Express/Node backend, MongoDB database, and OpenRouter AI integration.
 
 ---
 
@@ -16,8 +16,8 @@ Built with a React frontend, Express/Node backend, MongoDB database, and OpenRou
 ## Quick Start
 
 ```bash
-git clone https://github.com/YourUsername/TalentHub.git
-cd TalentHub/server
+git clone https://github.com/Sourabhpande532/talenthub-server.git
+cd talenthub/server
 npm install
 npm run start  # or `npm run dev` with nodemon
 ```
@@ -171,7 +171,7 @@ JWT_SECRET=your_jwt_secret_key
 
 # Frontend URLs for CORS & OAuth
 FRONTEND_URL=http://localhost:3000
-CALLBACK_URL=http://localhost:5001/auth/google/callback
+BACKEND_URL=http://localhost:5001
 
 # OpenRouter AI
 OPENAI_API_KEY=sk-or-v1-your-openrouter-key
