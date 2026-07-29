@@ -134,3 +134,47 @@ ${JSON.stringify(applicantsContext, null, 2)}
   }
 };
 
+exports.generateJobDescription = async (req, res) => {
+  try {
+    const { title, skills, experience } = req.body;
+
+    if (!title) {
+      return res.status(400).json({
+        success: false,
+        message: "Job title is required to generate a description.",
+      });
+    }
+
+    const systemPrompt = `You are an expert HR and Technical Recruiter.
+Your task is to generate a professional, engaging, and detailed job description based on the provided parameters.
+The output should only contain the job description text (no markdown formatting other than basic paragraphs or bullet points).
+
+Parameters:
+Job Title: ${title}
+Required Skills: ${skills || "Standard industry skills for this role"}
+Experience Required: ${experience || "Standard experience for this role"}
+`;
+
+    const userPrompt = "Please generate a professional job description.";
+
+    const response = await openai.chat.completions.create({
+      model: modelName,
+      temperature: 0.8, // High creativity for writing job descriptions
+      max_tokens: max_tokens_large,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    });
+
+    res
+      .status(200)
+      .json({ success: true, data: response.choices[0].message.content });
+  } catch (error) {
+    console.error("AI Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "AI service is currently unavailable. Please try again later.",
+    });
+  }
+};
