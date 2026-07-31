@@ -6,7 +6,7 @@ const {
   updateProfile,
   addBookmark,
   removeBookmark,
-  getRecruiterDashboard,
+  dashboardHandler,
 } = require("../controllers/userController");
 const { isApplicant, isRecruiter } = require("../middleware/role");
 
@@ -18,6 +18,7 @@ app.put("/profile", auth, updateProfile);
 app.post("/bookmarks", auth, isApplicant, addBookmark);
 app.delete("/bookmarks/:jobId", auth, isApplicant, removeBookmark);
 
-/* Recruiter Dashboard route */
-app.get("/dashboard", auth, isRecruiter, getRecruiterDashboard);
+/* Recruiter Dashboard (Handles Both) */
+app.get("/dashboard", auth, dashboardHandler);
+
 module.exports = app;

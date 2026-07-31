@@ -156,11 +156,68 @@ exports.getRecruiterDashboard = async (req, res) => {
           totalApplications,
           totalShortlisted,
         },
+        myJobs: jobs,
         recentApplications,
       },
     });
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.getApplicantDashboard = async (req, res) => {
+  try {
+    const applicantId = req.user.userId;
+
+    const applications = await Application.find({
+      applicant: applicantId,
+    }).populate({
+      path: "job",
+      populate: { path: "recruiter", select: "companyName" },
+    });
+
+    const applied = applications.length;
+    const shortlisted = applications.filter(
+      (a) => a.status === "Shortlisted",
+    ).length;
+    const rejected = applications.filter((a) => a.status === "Rejected").length;
+
+    const user = await User.findById(applicantId);
+    const bookmarked = user.bookmarks.length;
+
+    let recentActivity = [];
+    applications.forEach((app) => {
+      recentActivity.push({
+        type: app.status === "New" ? "Applied" : app.status,
+        jobTitle: app.job?.title || "Unknown Job",
+        companyName:
+          app.job?.companyName ||
+          (app.job?.recruiter && app.job.recruiter.companyName) ||
+          "Company",
+        date: app.createdAt,
+      });
+    });
+
+    recentActivity.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        stats: { applied, shortlisted, rejected, bookmarked },
+        recentActivity: recentActivity.slice(0, 10),
+      },
+    });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.dashboardHandler = async (req, res) => {
+  if (req.user.role === "Recruiter") {
+    return exports.getRecruiterDashboard(req, res);
+  } else {
+    return exports.getApplicantDashboard(req, res);
   }
 };
