@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema(
     experience: { type: String, default: "" },
     education: { type: String, default: "" },
     skills: { type: [String], default: [] },
+    resume: { type: String, default: "" },
     bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: "Job" }],
     /*  Recruiter */
     companyName: { type: String, default: "" },
