@@ -39,7 +39,7 @@ npm run start  # or `npm run dev` with nodemon
 ## Demo Video
 
 Watch a walkthrough (5-7 minutes) of all major features of this app: <br>
-[Drive Video Link](#)
+[Drive Video Link](https://drive.google.com/file/d/1V5EqwbOJm7DATIkv0RWcxZmOR8t4DtaZ/view?usp=sharing)
 
 ---
 
@@ -70,6 +70,12 @@ Watch a walkthrough (5-7 minutes) of all major features of this app: <br>
 **Security & Authorization**
 
 - Robust JWT authentication and role-based middleware (`isRecruiter`, `isApplicant`) protecting all endpoints.
+
+---
+
+## Planning Project 
+
+![](./assets/planning.png)
 
 ---
 
