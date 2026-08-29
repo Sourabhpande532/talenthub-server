@@ -25,7 +25,12 @@ exports.getAllJobs = async (req, res) => {
     // Build filters
     const filters = { status: "Active" };
     if (search) {
-      filters.title = { $regex: search, $options: "i" };
+      const searchRegex = { $regex: search, $options: "i" };
+      filters.$or = [
+        { title: searchRegex },
+        { company: searchRegex },
+        { skills: searchRegex },
+      ];
     }
     if (location) {
       filters.location = { $regex: location, $options: "i" };
@@ -37,7 +42,8 @@ exports.getAllJobs = async (req, res) => {
       filters.experience = experience;
     }
     if (employmentType) {
-      filters.employmentType = employmentType;
+      const empTypeRegex = employmentType.replace("-", "[ -]?");
+      filters.employmentType = { $regex: empTypeRegex, $options: "i" };
     }
     if (remote) {
       filters.remote = remote === "true";
