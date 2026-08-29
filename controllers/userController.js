@@ -192,6 +192,7 @@ exports.getApplicantDashboard = async (req, res) => {
         type: app.status === "New" ? "Applied" : app.status,
         jobTitle: app.job?.title || "Unknown Job",
         companyName:
+          app.job?.company ||
           app.job?.companyName ||
           (app.job?.recruiter && app.job.recruiter.companyName) ||
           "Company",
