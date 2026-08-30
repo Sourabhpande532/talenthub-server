@@ -28,13 +28,14 @@ exports.generateInterviewPrep = async (req, res) => {
       return res.status(404).json({ success: false, message: "Job not found" });
     }
 
+    const companyName = job.company || job.companyName || job.recruiter?.companyName || "Unknown Company";
     const systemPrompt = `You are an expert AI Interview Preparation Assistant.
 Generate preparation material for a candidate applying for the following job:
-Title: ${job.title}
-Company: ${job.recruiter.companyName}
-Experience Required: ${job.experience}
-Description: ${job.description}
-Skills: ${job.skills.join(", ")}
+Title: ${job.title || "Unknown Title"}
+Company: ${companyName}
+Experience Required: ${job.experience || "Not specified"}
+Description: ${job.description || "Not specified"}
+Skills: ${job.skills ? job.skills.join(", ") : "Not specified"}
 
 Your output must be formatted exactly like this:
 Interview Questions
