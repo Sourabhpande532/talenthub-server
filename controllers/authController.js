@@ -46,7 +46,7 @@ exports.loginUser = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Missing required fields" });
     }
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -65,9 +65,18 @@ exports.loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" },
     );
+
+    const userObj = user.toObject();
+    delete userObj.password;
+
     res
       .status(200)
-      .json({ success: true, message: "User login successful", token, user });
+      .json({
+        success: true,
+        message: "User login successful",
+        token,
+        user: userObj,
+      });
   } catch (error) {
     console.error(error.message, "Login server error");
     res.status(500).json({
@@ -93,7 +102,7 @@ exports.userById = async (req, res) => {
 
 exports.getAllUser = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = await User.find().select("-password");
     res.status(200).json({ success: true, data: { users } });
   } catch (error) {
     console.error(error.message);
