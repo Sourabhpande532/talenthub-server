@@ -1,4 +1,4 @@
-const OpenAI = require("openai");
+﻿const OpenAI = require("openai");
 const Job = require("../models/Job");
 const Application = require("../models/Application");
 

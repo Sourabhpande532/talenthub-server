@@ -1,4 +1,4 @@
-const isRecruiter = (req, res, next) => {
+﻿const isRecruiter = (req, res, next) => {
   if (req.user && req.user.role === "Recruiter") {
     next();
   } else {

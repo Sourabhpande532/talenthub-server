@@ -1,4 +1,4 @@
-const User = require("../models/User");
+﻿const User = require("../models/User");
 const Job = require("../models/Job");
 const Application = require("../models/Application");
 
@@ -43,6 +43,7 @@ exports.updateProfile = async (req, res) => {
       if (experience !== undefined) updateData.experience = experience;
       if (education !== undefined) updateData.education = education;
       if (skills !== undefined) updateData.skills = skills;
+      if (resume !== undefined) updateData.resume = resume;
     } else if (req.user.role === "Recruiter") {
       if (companyName !== undefined) updateData.companyName = companyName;
       if (companyLogo !== undefined) updateData.companyLogo = companyLogo;

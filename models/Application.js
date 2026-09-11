@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿const mongoose = require("mongoose");
 
 const applicationSchema = new mongoose.Schema(
   {
@@ -15,7 +15,7 @@ const applicationSchema = new mongoose.Schema(
     resume: { type: String, default: "" },
     status: {
       type: String,
-      enum: ["New", "Shortlisted", "Rejected"],
+      enum: ["New", "Shortlisted", "Rejected", "Withdrawn"],
       default: "New",
     },
     appliedAt: { type: Date, default: Date.now },

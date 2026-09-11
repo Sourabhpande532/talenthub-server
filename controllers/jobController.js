@@ -1,4 +1,4 @@
-const Job = require("../models/Job");
+﻿const Job = require("../models/Job");
 
 const getJobsFromDB = async (filters, sortOption) => {
   try {
@@ -24,25 +24,48 @@ exports.getAllJobs = async (req, res) => {
 
     // Build filters
     const filters = { status: "Active" };
-    if (search) {
-      const searchRegex = { $regex: search, $options: "i" };
+    if (search && search.trim()) {
+      const searchRegex = { $regex: search.trim(), $options: "i" };
       filters.$or = [
         { title: searchRegex },
         { company: searchRegex },
         { skills: searchRegex },
+        { location: searchRegex },
+        { description: searchRegex },
       ];
     }
-    if (location) {
-      filters.location = { $regex: location, $options: "i" };
+    if (location && location.trim()) {
+      if (location.toLowerCase() === "remote") {
+        const remoteCond = [
+          { location: { $regex: "remote", $options: "i" } },
+          { remote: true },
+        ];
+        if (filters.$or) {
+          filters.$and = [{ $or: filters.$or }, { $or: remoteCond }];
+          delete filters.$or;
+        } else {
+          filters.$or = remoteCond;
+        }
+      } else if (
+        location.toLowerCase() === "bangalore" ||
+        location.toLowerCase() === "bengaluru"
+      ) {
+        filters.location = {
+          $regex: "Bangalore|Bengaluru|Banglore|Bangolore",
+          $options: "i",
+        };
+      } else {
+        filters.location = { $regex: location.trim(), $options: "i" };
+      }
     }
     if (salary) {
       filters.salary = { $gte: Number(salary) };
     }
-    if (experience) {
-      filters.experience = experience;
+    if (experience && experience.trim()) {
+      filters.experience = experience.trim();
     }
-    if (employmentType) {
-      const empTypeRegex = employmentType.replace("-", "[ -]?");
+    if (employmentType && employmentType.trim()) {
+      const empTypeRegex = employmentType.trim().replace("-", "[ -]?");
       filters.employmentType = { $regex: empTypeRegex, $options: "i" };
     }
     if (remote) {
@@ -55,6 +78,10 @@ exports.getAllJobs = async (req, res) => {
       sortOption = { salary: -1 };
     } else if (sort === "salary-asc") {
       sortOption = { salary: 1 };
+    } else if (sort === "oldest") {
+      sortOption = { createdAt: 1 };
+    } else {
+      sortOption = { createdAt: -1 };
     }
 
     const jobs = await getJobsFromDB(filters, sortOption);

@@ -1,4 +1,4 @@
-const Application = require("../models/Application");
+﻿const Application = require("../models/Application");
 const Job = require("../models/Job");
 
 const getApplicationsByJobId = async (jobId, recruiterId) => {
@@ -68,6 +68,17 @@ exports.applyJob = async (req, res) => {
     });
 
     if (existingApplication) {
+      if (existingApplication.status === "Withdrawn") {
+        existingApplication.status = "New";
+        existingApplication.resume = resume || existingApplication.resume || "";
+        existingApplication.appliedAt = Date.now();
+        await existingApplication.save();
+        return res.status(200).json({
+          success: true,
+          message: "Applied successfully",
+          data: existingApplication,
+        });
+      }
       return res.status(400).json({
         success: false,
         message: "You have already applied for this job",
@@ -95,12 +106,16 @@ exports.applyJob = async (req, res) => {
   }
 };
 
-const deleteApplicationInDB = async (applicationId, applicantId) => {
+const withdrawApplicationInDB = async (applicationId, applicantId) => {
   try {
-    return await Application.findOneAndDelete({
-      _id: applicationId,
-      applicant: applicantId,
-    });
+    return await Application.findOneAndUpdate(
+      {
+        _id: applicationId,
+        applicant: applicantId,
+      },
+      { status: "Withdrawn" },
+      { new: true },
+    );
   } catch (error) {
     throw error;
   }
@@ -108,7 +123,7 @@ const deleteApplicationInDB = async (applicationId, applicantId) => {
 
 exports.withdrawApplication = async (req, res) => {
   try {
-    const application = await deleteApplicationInDB(
+    const application = await withdrawApplicationInDB(
       req.params.id,
       req.user.userId,
     );
@@ -120,7 +135,7 @@ exports.withdrawApplication = async (req, res) => {
     }
     res
       .status(200)
-      .json({ success: true, message: "Application withdrawn successfully" });
+      .json({ success: true, message: "Application withdrawn successfully", data: application });
   } catch (error) {
     console.error(error.message);
     res.status(500).json({
@@ -163,6 +178,13 @@ exports.updateApplicationStatus = async (req, res) => {
       return res.status(403).json({
         success: false,
         message: "Unauthorized or application not found",
+      });
+    }
+
+    if (application.status === "Withdrawn") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot update status: Candidate has already withdrawn this application",
       });
     }
 

@@ -1,4 +1,4 @@
-require("dotenv").config();
+﻿require("dotenv").config();
 const cloudinary = require("cloudinary");
 const ImageModel = require("../models/Image");
 

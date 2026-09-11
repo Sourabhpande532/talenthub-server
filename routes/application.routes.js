@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const app = express();
 const auth = require("../middleware/auth");
 const { isRecruiter, isApplicant } = require("../middleware/role");
