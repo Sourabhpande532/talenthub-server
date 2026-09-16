@@ -1,4 +1,4 @@
-﻿const User = require("../models/User");
+const User = require("../models/User");
 const Job = require("../models/Job");
 const Application = require("../models/Application");
 
@@ -32,6 +32,7 @@ exports.updateProfile = async (req, res) => {
       companyLogo,
       website,
       aboutCompany,
+      resume,
     } = req.body;
 
     const updateData = {};

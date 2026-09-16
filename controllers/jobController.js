@@ -1,4 +1,4 @@
-﻿const Job = require("../models/Job");
+const Job = require("../models/Job");
 
 const getJobsFromDB = async (filters, sortOption) => {
   try {
@@ -22,55 +22,87 @@ exports.getAllJobs = async (req, res) => {
       sort,
     } = req.query;
 
-    // Build filters
-    const filters = { status: "Active" };
+    const andConditions = [{ status: "Active" }];
+
+    // Search Query Logic with flexible matching for fullstack, frontend, backend, react, etc.
     if (search && search.trim()) {
-      const searchRegex = { $regex: search.trim(), $options: "i" };
-      filters.$or = [
-        { title: searchRegex },
-        { company: searchRegex },
-        { skills: searchRegex },
-        { location: searchRegex },
-        { description: searchRegex },
-      ];
+      const cleanSearch = search.trim();
+      const escaped = cleanSearch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      let pattern = escaped;
+      if (/full\s*stack/i.test(cleanSearch)) {
+        pattern = "full[\\s-]*stack";
+      } else if (/front\s*end/i.test(cleanSearch)) {
+        pattern = "front[\\s-]*end";
+      } else if (/back\s*end/i.test(cleanSearch)) {
+        pattern = "back[\\s-]*end";
+      } else if (/react\s*(js)?/i.test(cleanSearch)) {
+        pattern = "react([\\s.]?js)?";
+      } else if (/node\s*(js)?/i.test(cleanSearch)) {
+        pattern = "node([\\s.]?js)?";
+      }
+
+      const searchRegex = { $regex: pattern, $options: "i" };
+
+      andConditions.push({
+        $or: [
+          { title: searchRegex },
+          { company: searchRegex },
+          { skills: searchRegex },
+          { location: searchRegex },
+          { description: searchRegex },
+        ],
+      });
     }
+
+    // Location Filter Logic
     if (location && location.trim()) {
-      if (location.toLowerCase() === "remote") {
-        const remoteCond = [
-          { location: { $regex: "remote", $options: "i" } },
-          { remote: true },
-        ];
-        if (filters.$or) {
-          filters.$and = [{ $or: filters.$or }, { $or: remoteCond }];
-          delete filters.$or;
-        } else {
-          filters.$or = remoteCond;
-        }
+      const loc = location.trim();
+      if (loc.toLowerCase() === "remote") {
+        andConditions.push({
+          $or: [
+            { location: { $regex: "remote", $options: "i" } },
+            { remote: true },
+          ],
+        });
       } else if (
-        location.toLowerCase() === "bangalore" ||
-        location.toLowerCase() === "bengaluru"
+        loc.toLowerCase() === "bangalore" ||
+        loc.toLowerCase() === "bengaluru"
       ) {
-        filters.location = {
-          $regex: "Bangalore|Bengaluru|Banglore|Bangolore",
-          $options: "i",
-        };
+        andConditions.push({
+          location: {
+            $regex: "Bangalore|Bengaluru|Banglore|Bangolore",
+            $options: "i",
+          },
+        });
       } else {
-        filters.location = { $regex: location.trim(), $options: "i" };
+        const locEscaped = loc.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        andConditions.push({ location: { $regex: locEscaped, $options: "i" } });
       }
     }
+
+    // Salary Filter
     if (salary) {
-      filters.salary = { $gte: Number(salary) };
+      andConditions.push({ salary: { $gte: Number(salary) } });
     }
+
+    // Experience Filter
     if (experience && experience.trim()) {
-      filters.experience = experience.trim();
+      andConditions.push({ experience: experience.trim() });
     }
+
+    // Employment Type Filter
     if (employmentType && employmentType.trim()) {
       const empTypeRegex = employmentType.trim().replace("-", "[ -]?");
-      filters.employmentType = { $regex: empTypeRegex, $options: "i" };
+      andConditions.push({ employmentType: { $regex: empTypeRegex, $options: "i" } });
     }
+
+    // Remote Filter
     if (remote) {
-      filters.remote = remote === "true";
+      andConditions.push({ remote: remote === "true" });
     }
+
+    const filters = andConditions.length === 1 ? andConditions[0] : { $and: andConditions };
 
     // Build sort option
     let sortOption = { createdAt: -1 };
@@ -87,7 +119,7 @@ exports.getAllJobs = async (req, res) => {
     const jobs = await getJobsFromDB(filters, sortOption);
     res.status(200).json({ success: true, count: jobs.length, data: jobs });
   } catch (error) {
-    console.error(error.message);
+    console.error("getAllJobs error:", error.message);
     res.status(500).json({
       success: false,
       message: "Internal server error",
